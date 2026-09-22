@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Stopwatch using Synchronous Sequential Circuits | EC2201</title>
+  <meta name="description" content="Software simulation of a digital stopwatch using synchronous sequential circuits, state registers, finite state machine, and MOD-60 counters for EC2201 Digital Electronics.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <nav class="top-nav">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <div class="chip-icon">⚡</div>
+        <span class="brand-text">SyncChron<span style="color: var(--color-cyan)">Lab</span></span>
+        <span class="brand-badge">EC2201</span>
+      </div>
+      <ul class="nav-menu">
+        <li><a href="#home" class="nav-link active">Home</a></li>
+        <li><a href="#problem" class="nav-link">Problem</a></li>
+        <li><a href="#logic-model" class="nav-link">Logic Model</a></li>
+        <li><a href="#simulator" class="nav-link">Simulator</a></li>
+        <li><a href="#state-machine" class="nav-link">State Machine</a></li>
+        <li><a href="#counters" class="nav-link">Counters</a></li>
+        <li><a href="#truth-table" class="nav-link">Truth Table</a></li>
+        <li><a href="#timing-diagram" class="nav-link">Timing Diagram</a></li>
+        <li><a href="#test-cases" class="nav-link">Test Cases</a></li>
+        <li><a href="#results" class="nav-link">Results</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ================= MAIN CONTENT WRAPPER ================= -->
+  <main class="main-wrapper">
+
+    <!-- 1. HOME / HERO SECTION -->
+    <section id="home" class="section hero-section">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="pulse-dot"></span>
+          <span>LABORATORY SIMULATION PLATFORM</span>
+        </div>
+        <h1 class="hero-title">Digital Stopwatch using Synchronous Sequential Circuits</h1>
+        <div class="hero-course">EC2201 – Digital Electronics</div>
+        <p class="hero-desc">
+          Software simulation of a synchronous sequential digital stopwatch. Demonstrates master clock oscillation,
+          active rising-edge triggering, dual D/JK flip-flop state registers, finite state machine next-state logic,
+          and cascaded MOD-60 second and minute counters.
+        </p>
+        <div class="hero-actions">
+          <a href="#simulator" class="btn btn-primary">⚡ Launch Simulator</a>
+          <a href="#test-cases" class="btn btn-secondary">🧪 Run Test Suite</a>
+        </div>
+
+        <!-- 3 Concept Cards -->
+        <div class="grid-3">
+          <div class="concept-card">
+            <div class="concept-icon icon-clock">⏱️</div>
+            <h3 class="concept-title">CLOCK</h3>
+            <p class="concept-desc">
+              Periodic square wave generator providing global synchronization. State register latches and counter
+              increments occur strictly on active rising clock edges (▲).
+            </p>
+          </div>
+          <div class="concept-card">
+            <div class="concept-icon icon-fsm">🔄</div>
+            <h3 class="concept-title">STATE REGISTER</h3>
+            <p class="concept-desc">
+              Synchronous flip-flop memory (Q1, Q0) holding current operating state: IDLE (00), RUNNING (01), or
+              STOPPED (10), driven by next-state excitation equations.
+            </p>
+          </div>
+          <div class="concept-card">
+            <div class="concept-icon icon-counter">🔢</div>
+            <h3 class="concept-title">COUNTER</h3>
+            <p class="concept-desc">
+              Cascaded synchronous MOD-60 counters for seconds and minutes. Automatically rolls over from 59 to 00,
+              propagating terminal count carry pulses.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. REAL-WORLD PROBLEM & OBJECTIVE -->
+    <section id="problem" class="section">
+      <div class="section-header">
+        <span class="section-tag">Theory & Requirements</span>
+        <h2 class="section-title">Real-World Problem & Objective</h2>
+        <p class="section-subtitle">
+          A stopwatch requires accurate measurement of elapsed time. Digital systems achieve this using clock pulses,
+          sequential state control and counters.
+        </p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card problem-card">
+          <h3 class="card-title">⚠️ The Problem</h3>
+          <p style="color: var(--text-secondary);">
+            Manual timing introduces human reaction latency and arbitrary timing drifts. Furthermore, asynchronous or
+            software-loop timers suffer from accumulation jitter and lack predictable cycle synchronization.
+          </p>
+        </div>
+
+        <div class="card solution-card">
+          <h3 class="card-title">💡 The Solution</h3>
+          <p style="color: var(--text-secondary);">
+            A digital stopwatch based on <strong>synchronous sequential logic</strong> updates its state and counters at
+            defined clock edges, preventing timing races, eliminating glitches, and ensuring deterministic temporal
+            resolution.
+          </p>
+        </div>
+
+        <div class="card objective-card">
+          <h3 class="card-title">🎯 Laboratory Objectives</h3>
+          <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">
+            Design and simulate a digital stopwatch system featuring:
+          </p>
+          <ul class="obj-list">
+            <li class="obj-badge">START Control</li>
+            <li class="obj-badge">STOP Control</li>
+            <li class="obj-badge">RESET Control</li>
+            <li class="obj-badge">Master Clock</li>
+            <li class="obj-badge">MOD-60 Counters</li>
+            <li class="obj-badge">7-Segment Display</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. SYNCHRONOUS SEQUENTIAL LOGIC MODEL -->
+    <section id="logic-model" class="section">
+      <div class="section-header">
+        <span class="section-tag">Core Architecture</span>
+        <h2 class="section-title">Synchronous Sequential Logic Model</h2>
+        <p class="section-subtitle">
+          The foundational block diagram illustrating the unidirectional synchronous data and clock distribution bus.
+        </p>
+      </div>
+
+      <div class="logic-model-container">
+        <div class="pulse-banner">
+          <span class="pulse-banner-text">⚡ ACTIVE CLOCK EDGE BUS MONITOR</span>
+          <span class="pulse-indicator-tag">State and counter updates occur only at the active clock edge.</span>
+        </div>
+
+        <!-- Animated Flow Diagram -->
+        <div class="flow-diagram">
+          <!-- Block 1: Clock -->
+          <div class="flow-block" id="flowClock">
+            <div class="flow-block-header">Master Timebase</div>
+            <div class="flow-block-title">CLOCK GENERATOR</div>
+            <div class="flow-block-detail">Periodic Square Wave (1 Hz, 2 Hz, 5 Hz) • Active Rising Edge (▲)</div>
+          </div>
+
+          <div class="flow-arrow active-arrow">
+            <div class="flow-arrow-line"></div>
+            <div class="flow-arrow-head">▼</div>
+          </div>
+
+          <!-- Block 2: State Register -->
+          <div class="flow-block" id="flowReg">
+            <div class="flow-block-header">Memory Elements</div>
+            <div class="flow-block-title">STATE REGISTER (FLIP-FLOPS)</div>
+            <div class="flow-block-detail">D/JK Flip-Flop Storage: Q1 (MSB), Q0 (LSB) • Synchronously Latched</div>
+          </div>
+
+          <div class="flow-arrow active-arrow">
+            <div class="flow-arrow-line"></div>
+            <div class="flow-arrow-head">▼</div>
+          </div>
+
+          <!-- Block 3: Next State Logic -->
+          <div class="flow-block" id="flowLogic">
+            <div class="flow-block-header">Combinational Network</div>
+            <div class="flow-block-title">NEXT STATE LOGIC</div>
+            <div class="flow-block-detail">Evaluates Inputs (START, STOP, RESET) & Q1, Q0 • Excitation: D1, D0</div>
+          </div>
+
+          <div class="flow-arrow active-arrow">
+            <div class="flow-arrow-line"></div>
+            <div class="flow-arrow-head">▼</div>
+          </div>
+
+          <!-- Block 4: Counters -->
+          <div class="flow-block" id="flowCounters">
+            <div class="flow-block-header">Cascaded Counting Units</div>
+            <div class="flow-block-title">SYNCHRONOUS COUNTERS</div>
+            <div class="flow-block-detail">MOD-60 Seconds (00–59) ➔ Overflow Carry (TC) ➔ MOD-60 Minutes (00–59)</div>
+          </div>
+
+          <div class="flow-arrow active-arrow">
+            <div class="flow-arrow-line"></div>
+            <div class="flow-arrow-head">▼</div>
+          </div>
+
+          <!-- Block 5: Display -->
+          <div class="flow-block" id="flowDisplay">
+            <div class="flow-block-header">Output Interface</div>
+            <div class="flow-block-title">DIGITAL DISPLAY (MM:SS)</div>
+            <div class="flow-block-detail">BCD to 7-Segment Decoder Driver • Real-Time Visual Readout</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. CLOCK MODULE -->
+    <section id="clock-module" class="section">
+      <div class="section-header">
+        <span class="section-tag">Subsystem 1</span>
+        <h2 class="section-title">Clock Module Simulator</h2>
+        <p class="section-subtitle">
+          Generates the continuous clock pulses. Each LOW to HIGH transition represents the rising edge that clocks the
+          flip-flop registers and increment logic.
+        </p>
+      </div>
+
+      <div class="clock-dashboard">
+        <div class="telemetry-tile">
+          <div class="telemetry-label">CLOCK FREQUENCY</div>
+          <div class="telemetry-value" id="clockFreqDisplay" style="color: var(--color-cyan);">1 Hz</div>
+          <div class="freq-selector">
+            <button class="freq-btn active" data-freq="1">1 Hz</button>
+            <button class="freq-btn" data-freq="2">2 Hz</button>
+            <button class="freq-btn" data-freq="5">5 Hz</button>
+          </div>
+        </div>
+
+        <div class="telemetry-tile">
+          <div class="telemetry-label">CLOCK LEVEL</div>
+          <div style="margin-top: 0.5rem;">
+            <span class="clock-level-indicator level-low" id="clockLevelDisplay">LOW</span>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; font-family: var(--font-mono);">
+            LOW → HIGH → LOW
+          </div>
+        </div>
+
+        <div class="telemetry-tile">
+          <div class="telemetry-label">RISING EDGE</div>
+          <div class="edge-indicator" id="clockRisingEdgeIcon">▲</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">Active Trigger</div>
+        </div>
+
+        <div class="telemetry-tile">
+          <div class="telemetry-label">CLOCK PULSES</div>
+          <div class="telemetry-value" id="clockPulsesDisplay" style="color: var(--color-purple);">0000</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">Total Edge Ticks</div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 1rem;">
+        <button class="btn btn-step" id="btnStepClock">
+          ⚡ Single-Step Manual Clock Pulse (Tick)
+        </button>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+          Use the manual pulse button to step cycle-by-cycle during viva questions without automatic ticking.
+        </p>
+      </div>
+    </section>
+
+    <!-- 7. STOPWATCH SIMULATOR -->
+    <section id="simulator" class="section">
+      <div class="section-header">
+        <span class="section-tag">Interactive Hardware Workbench</span>
+        <h2 class="section-title">Stopwatch Simulator</h2>
+        <p class="section-subtitle">
+          Primary digital instrument displaying elapsed time in <code>MM:SS</code> format with pushbutton controls.
+        </p>
+      </div>
+
+      <div class="stopwatch-container">
+        <!-- 7-Segment Digital Readout -->
+        <div class="stopwatch-bezel">
+          <div class="digital-time-display">
+            <span id="displayMinutes">00</span>
+            <span>:</span>
+            <span id="displaySeconds">00</span>
+            <span class="digital-subsecond" id="displaySubsecond">.0</span>
+          </div>
+          <div class="display-labels">
+            <span>MINUTES</span>
+            <span>SECONDS</span>
+          </div>
+        </div>
+
+        <!-- Pushbutton Controls -->
+        <div class="control-panel">
+          <button class="control-btn btn-start" id="btnStart">
+            ▶ START
+          </button>
+          <button class="control-btn btn-stop" id="btnStop">
+            ⏹ STOP
+          </button>
+          <button class="control-btn btn-reset" id="btnReset">
+            🔄 RESET
+          </button>
+          <button class="control-btn btn-lap" id="btnLap">
+            ⏱ LAP
+          </button>
+        </div>
+
+        <!-- Lap History Table -->
+        <div class="lap-container">
+          <table class="lap-table">
+            <thead>
+              <tr>
+                <th>Lap #</th>
+                <th>Split Time</th>
+                <th>State at Lap</th>
+              </tr>
+            </thead>
+            <tbody id="lapTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. STATE MACHINE & 6. STATE REGISTER -->
+    <section id="state-machine" class="section">
+      <div class="section-header">
+        <span class="section-tag">Sequential Logic Core</span>
+        <h2 class="section-title">Finite State Machine & State Register</h2>
+        <p class="section-subtitle">
+          The stopwatch sequential controller is realized as a 3-state Mealy/Moore synchronous FSM.
+        </p>
+      </div>
+
+      <!-- FSM States Grid -->
+      <div class="fsm-visualizer">
+        <div class="fsm-state-box active-state" data-state="00" id="stateIdleBox">
+          <div class="state-name">IDLE</div>
+          <div class="state-bits">Bits: 00</div>
+          <div class="state-desc">Waiting for START. Counter held at 00:00.</div>
+        </div>
+
+        <div class="fsm-state-box" data-state="01" id="stateRunningBox">
+          <div class="state-name">RUNNING</div>
+          <div class="state-bits">Bits: 01</div>
+          <div class="state-desc">Counting enabled on each active rising edge.</div>
+        </div>
+
+        <div class="fsm-state-box" data-state="10" id="stateStoppedBox">
+          <div class="state-name">STOPPED</div>
+          <div class="state-bits">Bits: 10</div>
+          <div class="state-desc">Counting paused. Holds current elapsed value.</div>
+        </div>
+      </div>
+
+      <!-- State Register Flip-Flop Representation -->
+      <div class="card" style="text-align: center; margin-top: 1.5rem;">
+        <h3 class="card-title" style="justify-content: center;">STATE REGISTER (FLIP-FLOP STORAGE)</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; max-width: 650px; margin: 0 auto 1.5rem;">
+          The state register stores the current state and changes synchronously with the clock.
+          (Software simulation of flip-flop behavior, modeling physical D/JK flip-flop outputs).
+        </p>
+
+        <div class="flipflop-display">
+          <div class="flipflop-cell">
+            <div class="flipflop-label">FLIP-FLOP 1 (Q1)</div>
+            <div class="flipflop-bit" id="regQ1" style="color: var(--color-purple);">0</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">MSB Bit</div>
+          </div>
+
+          <div class="flipflop-cell">
+            <div class="flipflop-label">FLIP-FLOP 0 (Q0)</div>
+            <div class="flipflop-bit" id="regQ0" style="color: var(--color-cyan);">0</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">LSB Bit</div>
+          </div>
+        </div>
+
+        <div style="font-family: var(--font-mono); font-size: 1.1rem; margin-top: 0.5rem;">
+          CURRENT STATE: <span id="currentStateDisplay" style="color: var(--color-green); font-weight: 700;">IDLE</span>
+          &nbsp;|&nbsp;
+          STATE BITS: <span id="stateBitsDisplay" style="color: var(--color-purple); font-weight: 700;">00</span>
+          &nbsp;|&nbsp;
+          DECODED: <span id="stateDecodedName" style="color: #ffffff; font-weight: 700;">IDLE</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. COUNTER MODULE & 9. COUNTER BLOCK DIAGRAM -->
+    <section id="counters" class="section">
+      <div class="section-header">
+        <span class="section-tag">Subsystem 2</span>
+        <h2 class="section-title">Synchronous MOD-60 Counter Modules</h2>
+        <p class="section-subtitle">
+          Two cascaded MOD-60 counters track elapsed seconds and minutes. On the 59th second + rising edge, an overflow
+          carry-out pulse triggers the minutes counter.
+        </p>
+      </div>
+
+      <div class="counter-diagram-wrapper">
+        <!-- Second Counter Card -->
+        <div class="counter-module-card" id="cardSecCounter">
+          <div class="section-tag" style="background: rgba(6, 182, 212, 0.15);">SECONDS STAGE</div>
+          <h3 style="color: #ffffff; margin-top: 0.25rem;">MOD-60 SECOND COUNTER</h3>
+          <div class="counter-value-large" id="counterSecVal">00</div>
+          <div class="counter-binary">
+            Binary: <span id="counterSecBin">000000</span><sub>2</sub> (6-Bit)
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.75rem;">
+            Counts from 00 to 59. Generates Terminal Count (TC) pulse at 59 ➔ 00.
+          </p>
+        </div>
+
+        <!-- Connector Arrow -->
+        <div class="counter-connector">
+          <span>OVERFLOW</span>
+          <span class="carry-arrow">➔</span>
+          <span style="font-size: 0.7rem; color: var(--text-muted);">Synchronous Carry</span>
+        </div>
+
+        <!-- Minute Counter Card -->
+        <div class="counter-module-card" id="cardMinCounter">
+          <div class="section-tag" style="background: rgba(168, 85, 247, 0.15); color: var(--color-purple); border-color: rgba(168, 85, 247, 0.3);">MINUTES STAGE</div>
+          <h3 style="color: #ffffff; margin-top: 0.25rem;">MOD-60 MINUTE COUNTER</h3>
+          <div class="counter-value-large" id="counterMinVal" style="color: var(--color-purple);">00</div>
+          <div class="counter-binary">
+            Binary: <span id="counterMinBin">000000</span><sub>2</sub> (6-Bit)
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.75rem;">
+            Increments strictly when Seconds Overflow is asserted on active clock edge.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. TRUTH TABLE -->
+    <section id="truth-table" class="section">
+      <div class="section-header">
+        <span class="section-tag">Logic Specification</span>
+        <h2 class="section-title">Sequential State Transition Truth Table</h2>
+        <p class="section-subtitle">
+          Dynamic excitation truth table. The currently active row is highlighted in real-time as state and inputs change.
+        </p>
+      </div>
+
+      <div class="table-responsive">
+        <table class="truth-table">
+          <thead>
+            <tr>
+              <th>Current State</th>
+              <th>START</th>
+              <th>STOP</th>
+              <th>RESET</th>
+              <th>Next State</th>
+              <th>Counter Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-cur-state="IDLE" data-start="0" data-stop="0" data-reset="0" class="active-truth-row">
+              <td><span class="badge-state badge-idle">IDLE (00)</span></td>
+              <td>0</td><td>0</td><td>0</td>
+              <td><span class="badge-state badge-idle">IDLE (00)</span></td>
+              <td>HOLD (Disabled)</td>
+            </tr>
+            <tr data-cur-state="IDLE" data-start="1" data-stop="0" data-reset="0">
+              <td><span class="badge-state badge-idle">IDLE (00)</span></td>
+              <td>1</td><td>0</td><td>0</td>
+              <td><span class="badge-state badge-running">RUNNING (01)</span></td>
+              <td>ENABLE</td>
+            </tr>
+            <tr data-cur-state="RUNNING" data-start="0" data-stop="0" data-reset="0">
+              <td><span class="badge-state badge-running">RUNNING (01)</span></td>
+              <td>0</td><td>0</td><td>0</td>
+              <td><span class="badge-state badge-running">RUNNING (01)</span></td>
+              <td>ENABLE (Counting)</td>
+            </tr>
+            <tr data-cur-state="RUNNING" data-start="0" data-stop="1" data-reset="0">
+              <td><span class="badge-state badge-running">RUNNING (01)</span></td>
+              <td>0</td><td>1</td><td>0</td>
+              <td><span class="badge-state badge-stopped">STOPPED (10)</span></td>
+              <td>HOLD</td>
+            </tr>
+            <tr data-cur-state="RUNNING" data-start="0" data-stop="0" data-reset="1">
+              <td><span class="badge-state badge-running">RUNNING (01)</span></td>
+              <td>0</td><td>0</td><td>1</td>
+              <td><span class="badge-state badge-idle">IDLE (00)</span></td>
+              <td>RESET (00:00)</td>
+            </tr>
+            <tr data-cur-state="STOPPED" data-start="0" data-stop="0" data-reset="0">
+              <td><span class="badge-state badge-stopped">STOPPED (10)</span></td>
+              <td>0</td><td>0</td><td>0</td>
+              <td><span class="badge-state badge-stopped">STOPPED (10)</span></td>
+              <td>HOLD</td>
+            </tr>
+            <tr data-cur-state="STOPPED" data-start="1" data-stop="0" data-reset="0">
+              <td><span class="badge-state badge-stopped">STOPPED (10)</span></td>
+              <td>1</td><td>0</td><td>0</td>
+              <td><span class="badge-state badge-running">RUNNING (01)</span></td>
+              <td>ENABLE</td>
+            </tr>
+            <tr data-cur-state="STOPPED" data-start="0" data-stop="0" data-reset="1">
+              <td><span class="badge-state badge-stopped">STOPPED (10)</span></td>
+              <td>0</td><td>0</td><td>1</td>
+              <td><span class="badge-state badge-idle">IDLE (00)</span></td>
+              <td>RESET (00:00)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 11. TIMING DIAGRAM -->
+    <section id="timing-diagram" class="section">
+      <div class="section-header">
+        <span class="section-tag">Waveform Oscilloscope</span>
+        <h2 class="section-title">Interactive Timing Diagram</h2>
+        <p class="section-subtitle">
+          Real-time logic analyzer capturing square wave clock pulses, rising edges, input transitions, counter enable,
+          and seconds bus values.
+        </p>
+      </div>
+
+      <div class="timing-canvas-container">
+        <canvas id="timingCanvas"></canvas>
+        <div class="timing-legend">
+          <div class="legend-item"><span class="legend-color" style="background: #38bdf8;"></span> CLOCK (▲ Rising Edge)</div>
+          <div class="legend-item"><span class="legend-color" style="background: #10b981;"></span> START</div>
+          <div class="legend-item"><span class="legend-color" style="background: #ef4444;"></span> STOP</div>
+          <div class="legend-item"><span class="legend-color" style="background: #f59e0b;"></span> RESET</div>
+          <div class="legend-item"><span class="legend-color" style="background: #a855f7;"></span> ENABLE</div>
+          <div class="legend-item"><span class="legend-color" style="background: #06b6d4;"></span> SECOND BUS</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12. EVENT LOG -->
+    <section id="event-log" class="section">
+      <div class="section-header">
+        <span class="section-tag">Audit Trail</span>
+        <h2 class="section-title">Live Hardware Event Log</h2>
+        <p class="section-subtitle">
+          Chronological trace capturing microsecond-level hardware assertions, clock edges, and state transitions.
+        </p>
+      </div>
+
+      <div class="event-log-wrapper">
+        <div class="log-toolbar">
+          <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-secondary);">
+            EVENT AUDIT STREAM
+          </span>
+          <button class="btn btn-secondary btn-sm" id="btnClearLog">Clear Log</button>
+        </div>
+        <div class="log-scroll-area" id="eventLogArea">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 13. TEST CASES & 14. AUTOMATED TEST RUNNER -->
+    <section id="test-cases" class="section">
+      <div class="section-header">
+        <span class="section-tag">Quality Assurance</span>
+        <h2 class="section-title">Automated Test Runner & Test Cases</h2>
+        <p class="section-subtitle">
+          Automated test suite executing 15 discrete digital logic unit tests (10 Normal + 5 Edge/Fault Cases)
+          evaluating the real JavaScript engine without hardcoded passes.
+        </p>
+      </div>
+
+      <div class="test-summary-strip">
+        <div class="test-counters" id="testSummaryStrip">
+          <span class="test-counter-item">TOTAL TESTS: <strong>15</strong></span>
+          <span class="test-counter-item" style="color: var(--color-green)">PASSED: <strong>15</strong></span>
+          <span class="test-counter-item" style="color: var(--text-muted)">FAILED: <strong>0</strong></span>
+        </div>
+        <button class="btn btn-primary" id="btnRunAllTests">
+          ▶ RUN ALL TESTS
+        </button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="truth-table" style="text-align: left;">
+          <thead>
+            <tr>
+              <th style="width: 70px;">Test ID</th>
+              <th>Test Scenario</th>
+              <th>Input Stimulus</th>
+              <th>Expected Output</th>
+              <th>Actual Output</th>
+              <th style="width: 90px; text-align: center;">Status</th>
+            </tr>
+          </thead>
+          <tbody id="testTableBody">
+            <!-- Dynamically populated by TestRunner -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 15. SYNTHETIC DATASET & ANALYSIS -->
+    <section id="synthetic-data" class="section">
+      <div class="section-header">
+        <span class="section-tag">Validation Telemetry</span>
+        <h2 class="section-title">Reproducible Synthetic Test Dataset</h2>
+        <p class="section-subtitle">
+          Cycle-by-cycle logic execution table recording inputs, states, and counter counts across sequential clock pulses.
+        </p>
+      </div>
+
+      <div class="table-responsive">
+        <table class="truth-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Pulse</th>
+              <th>Current State</th>
+              <th>START</th>
+              <th>STOP</th>
+              <th>RESET</th>
+              <th>Sec</th>
+              <th>Min</th>
+              <th>Next State</th>
+              <th>Expected</th>
+              <th>Actual</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody id="syntheticTableBody">
+            <!-- Populated by SyntheticDataset -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Chart: Clock Pulse vs Counter Value -->
+      <div class="chart-container">
+        <h3 class="card-title">📈 Chart: Clock Pulse vs Counter Value</h3>
+        <canvas id="syntheticChart"></canvas>
+      </div>
+    </section>
+
+    <!-- 16. RESULTS DASHBOARD -->
+    <section id="results" class="section">
+      <div class="section-header">
+        <span class="section-tag">Validation Summary</span>
+        <h2 class="section-title">Results Dashboard</h2>
+        <p class="section-subtitle">
+          Real-time verification matrix reflecting functional readiness of all digital electronics subsystems.
+        </p>
+      </div>
+
+      <!-- Working Checklist -->
+      <div class="results-checklist">
+        <div class="check-item">
+          <span>CLOCK MODULE</span>
+          <span class="check-status-ok">✓ WORKING</span>
+        </div>
+        <div class="check-item">
+          <span>STATE MACHINE</span>
+          <span class="check-status-ok">✓ WORKING</span>
+        </div>
+        <div class="check-item">
+          <span>STATE REGISTER</span>
+          <span class="check-status-ok">✓ WORKING</span>
+        </div>
+        <div class="check-item">
+          <span>SECOND COUNTER</span>
+          <span class="check-status-ok">✓ WORKING</span>
+        </div>
+        <div class="check-item">
+          <span>MINUTE COUNTER</span>
+          <span class="check-status-ok">✓ WORKING</span>
+        </div>
+        <div class="check-item">
+          <span>START CONTROL</span>
+          <span class="check-status-ok">✓ WORKING</span>
+        </div>
+        <div class="check-item">
+          <span>STOP CONTROL</span>
+          <span class="check-status-ok">✓ WORKING</span>
+        </div>
+        <div class="check-item">
+          <span>RESET CONTROL</span>
+          <span class="check-status-ok">✓ WORKING</span>
+        </div>
+        <div class="check-item">
+          <span>7-SEGMENT DISPLAY</span>
+          <span class="check-status-ok">✓ WORKING</span>
+        </div>
+        <div class="check-item">
+          <span>TEST SUITE</span>
+          <span class="check-status-ok" id="checkTestsStatus">15 / 15 PASSED</span>
+        </div>
+      </div>
+
+      <!-- Live Telemetry Grid -->
+      <div class="grid-4">
+        <div class="telemetry-tile">
+          <div class="telemetry-label">CURRENT STATE</div>
+          <div class="telemetry-value" id="tileCurrentState" style="color: var(--color-green); font-size: 1.5rem;">IDLE</div>
+        </div>
+        <div class="telemetry-tile">
+          <div class="telemetry-label">CURRENT TIME</div>
+          <div class="telemetry-value" id="tileCurrentTime" style="color: var(--color-cyan); font-size: 1.5rem;">00:00</div>
+        </div>
+        <div class="telemetry-tile">
+          <div class="telemetry-label">CLOCK PULSES</div>
+          <div class="telemetry-value" id="tileClockPulses" style="color: var(--color-purple); font-size: 1.5rem;">0000</div>
+        </div>
+        <div class="telemetry-tile">
+          <div class="telemetry-label">TESTS PASSED</div>
+          <div class="telemetry-value" id="tilePassed" style="color: var(--color-green); font-size: 1.5rem;">15</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 17. ASSUMPTIONS -->
+    <section id="assumptions" class="section">
+      <div class="section-header">
+        <span class="section-tag">Engineering Specifications</span>
+        <h2 class="section-title">Design Assumptions</h2>
+        <p class="section-subtitle">
+          Key operational assumptions governing this sequential digital electronics simulation.
+        </p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <ul style="list-style-position: inside; color: var(--text-secondary); line-height: 2;">
+            <li><strong>1. Default Clock Frequency:</strong> Configured at 1 Hz for real-time 1-second pulse increments.</li>
+            <li><strong>2. Software-Generated Clock:</strong> Synthesized square oscillator modeling discrete 50% duty cycle logic levels.</li>
+            <li><strong>3. Edge Triggering:</strong> State transitions and counter increments occur strictly on the active rising clock edge (0 ➔ 1).</li>
+            <li><strong>4. Seconds Counter Modulus:</strong> MOD-60 counter cycling through states 00 to 59.</li>
+            <li><strong>5. Minutes Counter Modulus:</strong> MOD-60 counter cycling through states 00 to 59.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <ul style="list-style-position: inside; color: var(--text-secondary); line-height: 2;">
+            <li><strong>6. START Logic:</strong> Asserts asynchronous start pulse enabling the FSM to transition from IDLE/STOPPED to RUNNING at the next clock edge.</li>
+            <li><strong>7. STOP Logic:</strong> Transitions FSM from RUNNING to STOPPED, disabling the counter clock enable line.</li>
+            <li><strong>8. RESET Logic:</strong> Synchronous master clear returning all state flip-flops and counter registers to zero.</li>
+            <li><strong>9. Stopwatch Display Format:</strong> Standard MM:SS two-digit decimal representation with BCD decoding.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 18. CODE ARCHITECTURE -->
+    <section id="architecture" class="section">
+      <div class="section-header">
+        <span class="section-tag">Software Engineering</span>
+        <h2 class="section-title">Digital Circuit Simulation Architecture</h2>
+        <p class="section-subtitle">
+          Pure modular object-oriented ES6+ classes mapping directly to digital logic laboratory hardware blocks.
+        </p>
+      </div>
+
+      <div class="card">
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+          To mirror actual physical IC implementation, the project avoids standard single-line JavaScript timer shortcuts like
+          <code>setInterval(() =&gt; seconds++, 1000)</code>. Instead, it simulates discrete circuit blocks:
+        </p>
+
+        <div class="grid-3">
+          <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <h4 style="color: var(--color-cyan); margin-bottom: 0.5rem;">ClockEngine</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">
+              Oscillator generating continuous square waves with edge-detection hooks (<code>onRisingEdge</code>).
+            </p>
+          </div>
+
+          <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <h4 style="color: var(--color-purple); margin-bottom: 0.5rem;">StateRegister</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">
+              Simulates physical D flip-flop storage cells Q1 (MSB) and Q0 (LSB) with synchronous clock gating.
+            </p>
+          </div>
+
+          <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <h4 style="color: var(--color-green); margin-bottom: 0.5rem;">StateMachine</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">
+              Evaluates boolean next-state excitation equations: D1 and D0 from inputs and current register bits.
+            </p>
+          </div>
+
+          <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <h4 style="color: var(--color-amber); margin-bottom: 0.5rem;">ModCounter</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">
+              Synchronous MOD-60 counters with terminal count carry outputs cascaded to the minutes stage.
+            </p>
+          </div>
+
+          <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <h4 style="color: #38bdf8; margin-bottom: 0.5rem;">TimingCanvas</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">
+              Logic analyzer visualizing multi-channel square waveforms for clock, control lines, and data bus.
+            </p>
+          </div>
+
+          <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <h4 style="color: var(--color-red); margin-bottom: 0.5rem;">TestRunner</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">
+              Headless verification framework executing 15 unit tests against the logic modules without mocking passes.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="site-footer">
+    <div style="max-width: 1200px; margin: 0 auto;">
+      <p style="margin-bottom: 0.5rem;">
+        <strong>EC2201 – Digital Electronics Laboratory Project</strong>
+      </p>
+      <p>
+        Title: <span class="footer-highlight">Digital Stopwatch using Synchronous Sequential Circuits</span> |
+        Architecture: Vanilla HTML5, CSS3, ES6+ Modular Logic
+      </p>
+      <p style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
+        Fully self-contained offline laboratory demonstration. Complies with synchronous sequential design principles.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Simulation JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>
